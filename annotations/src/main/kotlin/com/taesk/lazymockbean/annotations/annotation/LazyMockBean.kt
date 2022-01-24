@@ -2,7 +2,7 @@ package com.taesk.lazymockbean.annotations.annotation
 
 import kotlin.reflect.KClass
 
-@Target(AnnotationTarget.TYPE, AnnotationTarget.PROPERTY)
+@Target(AnnotationTarget.FIELD)
 annotation class LazyMockBean(
     val value: Array<KClass<*>>
 )
