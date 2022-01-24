@@ -19,12 +19,10 @@ dependencies {
 
 ### Examples
 
-As-Is
-
 ```kotlin
 class SomethingServiceTest {
 
-    @LazyMockBean(targets = [SampleController])
+    @LazyMockBean(targets = [SampleController::class])
     private lateinit var sampleService1: SampleService1
 
     @Autowired
