@@ -2,6 +2,7 @@ package com.taesk.lazymockbean.annotations.listener
 
 import com.taesk.lazymockbean.annotations.context.LazyMockFieldStateContext
 import com.taesk.lazymockbean.annotations.parser.LazyMockFieldStateParser
+import com.taesk.lazymockbean.annotations.parser.LazySpyFieldStateParser
 import org.springframework.core.Ordered
 import org.springframework.test.context.TestContext
 import org.springframework.test.context.TestExecutionListener
@@ -10,6 +11,9 @@ class LazyMockBeanTestExecutionListener : TestExecutionListener, Ordered {
     override fun beforeTestClass(testContext: TestContext) {
         val lazyMockFieldStates = LazyMockFieldStateParser.parse(testContext)
         LazyMockFieldStateContext.addLocal(lazyMockFieldStates)
+
+        val lazySpyFieldStates = LazySpyFieldStateParser.parse(testContext)
+        LazyMockFieldStateContext.addLocal(lazySpyFieldStates)
         super.beforeTestClass(testContext)
     }
 

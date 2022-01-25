@@ -7,8 +7,8 @@ data class LazyMockFieldState(
     val testField: Field,
     val field: Field,
     val parents: Any,
-    val origin: Any?,
-    val mock: Any?,
+    val origin: Any,
+    val mock: Any,
 ) {
     override fun equals(other: Any?): Boolean {
         if (other == null) {

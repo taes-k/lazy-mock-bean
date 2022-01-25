@@ -2,12 +2,14 @@ package com.taesk.lazymockbean.sampleapp.controller
 
 import com.taesk.lazymockbean.sampleapp.service.SampleServiceA
 import com.taesk.lazymockbean.sampleapp.service.SampleServiceB
+import com.taesk.lazymockbean.sampleapp.service.SampleServiceC
 import org.springframework.stereotype.Controller
 
 @Controller
 class SampleController(
     val sampleServiceA: SampleServiceA,
-    val sampleServiceB: SampleServiceB
+    val sampleServiceB: SampleServiceB,
+    val sampleServiceC: SampleServiceC
 ) {
     fun getSampleA1(): String {
         return sampleServiceA.getSample1()
@@ -23,5 +25,13 @@ class SampleController(
 
     fun getSampleB2(): String {
         return sampleServiceB.getSample2()
+    }
+
+    fun getSampleC1(): String {
+        return sampleServiceC.getSample1()
+    }
+
+    fun getSampleC2(): String {
+        return sampleServiceC.getSample2()
     }
 }
