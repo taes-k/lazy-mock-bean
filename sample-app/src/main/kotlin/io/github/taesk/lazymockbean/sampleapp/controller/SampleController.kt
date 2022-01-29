@@ -7,9 +7,9 @@ import org.springframework.stereotype.Controller
 
 @Controller
 class SampleController(
-    val sampleServiceA: SampleServiceA,
-    val sampleServiceB: SampleServiceB,
-    val sampleServiceC: SampleServiceC
+    private val sampleServiceA: SampleServiceA,
+    private val sampleServiceB: SampleServiceB,
+    private val sampleServiceC: SampleServiceC
 ) {
     fun getSampleA1(): String {
         return sampleServiceA.getSample1()
