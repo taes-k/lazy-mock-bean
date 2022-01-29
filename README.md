@@ -1,7 +1,9 @@
 # lazy-mock-bean
 
-`@SpringBootTest`수행중에 `@MockBean`사용시 `Mock-Bean` 생성을 위해 SpringContext reload가 발생합니다. 대규모 시스템에서는 Springcontext reload는
-테스트수행 지연을 유발하기 context reload를 유발시키지않는 mockBean 설정을 제공합니다.
+`@SpringBootTest`수행중 Context reload 과정없이 `@MockBean`, `@MockSpy`를 설정해줍니다.  
+
+`@MockBean`, `@SpyBean` 사용시 신규 `Bean` 설정을 위해 SpringContext reload가 발생합니다.  
+대규모 시스템에서의 잦은 SpringContext reload는 테스트 수행 속도에 영향을 주기때문에 `lazy-mock-bean`을 통해 테스트 속도 저하를 방지 할 수 있습니다.
 
 ### Getting started
 
@@ -16,6 +18,8 @@ dependencies {
     ...
 }
 ```
+
+- [sample](https://github.com/taes-k/lazy-mock-bean/tree/main/sample-app)
 
 ### Examples
 
