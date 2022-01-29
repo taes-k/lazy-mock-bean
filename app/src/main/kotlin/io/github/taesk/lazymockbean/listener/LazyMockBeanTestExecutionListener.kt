@@ -3,6 +3,7 @@ package io.github.taesk.lazymockbean.listener
 import io.github.taesk.lazymockbean.context.LazyMockFieldStateContext
 import io.github.taesk.lazymockbean.parser.LazyMockFieldStateParser
 import io.github.taesk.lazymockbean.parser.LazySpyFieldStateParser
+import org.mockito.Mockito
 import org.springframework.core.Ordered
 import org.springframework.test.context.TestContext
 import org.springframework.test.context.TestExecutionListener
@@ -26,6 +27,7 @@ class LazyMockBeanTestExecutionListener : TestExecutionListener, Ordered {
         val stateContextList = LazyMockFieldStateContext.getLocal()
         for (lazyMockFieldState in stateContextList) {
             val testField = lazyMockFieldState.testField
+            Mockito.reset(lazyMockFieldState.mock)
             testField.trySetAccessible()
             testField.set(testContext.testInstance, lazyMockFieldState.mock)
 
