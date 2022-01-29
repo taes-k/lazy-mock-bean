@@ -22,16 +22,7 @@ interface LazyFieldStateParser {
             targetObject: Class<*>,
             targetFieldType: Class<*>
         ): LazyMockTarget {
-            val targetBeans = testContext.applicationContext.getBeansOfType(targetObject)
-            require(targetBeans.isNotEmpty()) { "not exist bean [${targetObject.simpleName}] in beanFactory" }
-            require(targetBeans.size == 1) { "more than 1 bean [${targetObject.simpleName}] in beanFactory" }
-
-            val targetBeanCandidate = targetBeans.values.first()
-            val targetBean =
-                if (AopUtils.isAopProxy(targetBeanCandidate)) {
-                    AopProxyUtils.getSingletonTarget(targetBeanCandidate)
-                } else targetBeanCandidate
-
+            val targetBean = getBean(testContext, targetObject)
             val targetFieldInBean = ReflectionUtils.findField(targetBean::class.java, null, targetFieldType)
             requireNotNull(targetFieldInBean) { "not exist field [${targetFieldType.name}] in bean [${targetObject.simpleName}]" }
 
@@ -39,6 +30,20 @@ interface LazyFieldStateParser {
                 targetBean = targetBean,
                 targetField = targetFieldInBean
             )
+        }
+
+        fun getBean(
+            testContext: TestContext,
+            targetObject: Class<*>
+        ): Any {
+            val targetBeans = testContext.applicationContext.getBeansOfType(targetObject)
+            require(targetBeans.isNotEmpty()) { "not exist bean [${targetObject.simpleName}] in beanFactory" }
+            require(targetBeans.size == 1) { "more than 1 bean [${targetObject.simpleName}] in beanFactory" }
+
+            val targetBeanCandidate = targetBeans.values.first()
+            return if (AopUtils.isAopProxy(targetBeanCandidate)) {
+                checkNotNull(AopProxyUtils.getSingletonTarget(targetBeanCandidate))
+            } else targetBeanCandidate
         }
     }
 }

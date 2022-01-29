@@ -14,6 +14,7 @@ object LazyMockFieldStateParser : LazyFieldStateParser {
             .flatMap { testField ->
                 val testFieldType = testField.type
                 val injectTargets = testField.getAnnotation(LazyMockBean::class.java).value
+                val mockBean = Mockito.mock(testFieldType)
 
                 injectTargets.map { injectTarget ->
                     val (targetBean, targetField) = getLazyMockTargetBean(
@@ -27,7 +28,7 @@ object LazyMockFieldStateParser : LazyFieldStateParser {
                         field = targetField,
                         parents = targetBean,
                         origin = originValue,
-                        mock = Mockito.mock(testFieldType),
+                        mock = mockBean,
                     )
                 }
             }.toSet()

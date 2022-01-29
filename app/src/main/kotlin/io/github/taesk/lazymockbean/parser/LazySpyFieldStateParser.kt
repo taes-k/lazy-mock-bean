@@ -2,6 +2,7 @@ package io.github.taesk.lazymockbean.parser
 
 import io.github.taesk.lazymockbean.annotation.LazySpyBean
 import io.github.taesk.lazymockbean.data.LazyMockFieldState
+import io.github.taesk.lazymockbean.parser.LazyFieldStateParser.Companion.getBean
 import io.github.taesk.lazymockbean.parser.LazyFieldStateParser.Companion.getForce
 import org.mockito.Mockito
 import org.springframework.test.context.TestContext
@@ -13,6 +14,8 @@ object LazySpyFieldStateParser : LazyFieldStateParser {
             .flatMap { testField ->
                 val testFieldType = testField.type
                 val injectTargets = testField.getAnnotation(LazySpyBean::class.java).value
+                val spyTargetBean = getBean(testContext, testFieldType)
+                val spyBean = Mockito.spy(spyTargetBean)
 
                 injectTargets.map { injectTarget ->
                     val (targetBean, targetField) = LazyFieldStateParser.getLazyMockTargetBean(
@@ -26,7 +29,7 @@ object LazySpyFieldStateParser : LazyFieldStateParser {
                         field = targetField,
                         parents = targetBean,
                         origin = originValue,
-                        mock = Mockito.spy(originValue),
+                        mock = spyBean,
                     )
                 }
             }.toSet()
