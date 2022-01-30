@@ -25,6 +25,10 @@ class LazyMockBeanTestExecutionListener : TestExecutionListener, Ordered {
 
     private fun setLazyMockField(testContext: TestContext) {
         val stateContextList = LazyMockFieldStateContext.getLocal()
+        if (stateContextList.isNullOrEmpty()) {
+            return
+        }
+
         for (lazyMockFieldState in stateContextList) {
             val testField = lazyMockFieldState.testField
             Mockito.reset(lazyMockFieldState.mock)
@@ -44,6 +48,10 @@ class LazyMockBeanTestExecutionListener : TestExecutionListener, Ordered {
 
     private fun rollbackLazyMockField() {
         val stateContextList = LazyMockFieldStateContext.getLocal()
+        if (stateContextList.isNullOrEmpty()) {
+            return
+        }
+
         for (lazyMockFieldState in stateContextList) {
             val targetField = lazyMockFieldState.field
             targetField.trySetAccessible()

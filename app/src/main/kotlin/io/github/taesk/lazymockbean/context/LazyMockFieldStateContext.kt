@@ -14,7 +14,7 @@ object LazyMockFieldStateContext {
         }
     }
 
-    fun getLocal(): Set<LazyMockFieldState> {
+    fun getLocal(): Set<LazyMockFieldState>? {
         return threadLocal.get()
     }
 
