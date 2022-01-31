@@ -24,9 +24,9 @@ object LazyMockFieldStateParser : LazyFieldStateParser {
                     )
                     val originValue = targetField.getForce(targetBean)
                     LazyMockFieldState(
-                        testField = testField,
-                        field = targetField,
-                        parents = targetBean,
+                        mockingField = testField,
+                        targetField = targetField,
+                        targetBean = targetBean,
                         origin = originValue,
                         mock = mockBean,
                     )

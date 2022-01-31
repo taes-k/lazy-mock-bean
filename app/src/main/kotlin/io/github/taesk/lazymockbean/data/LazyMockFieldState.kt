@@ -4,9 +4,9 @@ import java.lang.reflect.Field
 import java.util.Objects
 
 data class LazyMockFieldState(
-    val testField: Field,
-    val field: Field,
-    val parents: Any,
+    val mockingField: Field,
+    val targetField: Field,
+    val targetBean: Any,
     val origin: Any,
     val mock: Any,
 ) {
@@ -19,12 +19,12 @@ data class LazyMockFieldState(
             return false
         }
 
-        return testField === other.testField &&
-            field === other.field &&
-            parents === other.parents
+        return mockingField === other.mockingField &&
+            targetField === other.targetField &&
+            targetBean === other.targetBean
     }
 
     override fun hashCode(): Int {
-        return Objects.hash(testField, field, parents)
+        return Objects.hash(mockingField, targetField, targetBean)
     }
 }

@@ -32,9 +32,9 @@ object LazySpyFieldStateParser : LazyFieldStateParser {
                     )
                     val originValue = targetField.getForce(targetBean)
                     LazyMockFieldState(
-                        testField = testField,
-                        field = targetField,
-                        parents = targetBean,
+                        mockingField = testField,
+                        targetField = targetField,
+                        targetBean = targetBean,
                         origin = originValue,
                         mock = spyBean,
                     )
