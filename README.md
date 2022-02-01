@@ -29,13 +29,29 @@ class SomethingServiceTest {
     @LazyMockBean(targets = [SampleController::class])
     private lateinit var sampleService1: SampleService1
 
+
+    @LazySpyBean(targets = [SampleController::class])
+    private lateinit var sampleService2: SampleService2
+    
     @Autowired
     private lateinit var sut: SampleController
 
     @Test
-    fun doSomething() {
+    fun doSomething_withMock() {
         // given
         Mockito.`when`(sampleService1().getSample()).thenReturn(...);
+
+        // when
+        var result = sut.doSomething(...);
+
+        // then
+        then()...
+    }
+    
+    @Test
+    fun doSomething_withSpy() {
+        // given
+        Mockito.`when`(sampleService2().getSample()).thenReturn(...);
 
         // when
         var result = sut.doSomething(...);
