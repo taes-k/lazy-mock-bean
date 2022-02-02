@@ -30,14 +30,14 @@ class LazyMockBeanTestExecutionListener : TestExecutionListener, Ordered {
         }
 
         for (lazyMockFieldState in stateContextList) {
-            val testField = lazyMockFieldState.testField
+            val mockingField = lazyMockFieldState.mockingField
             Mockito.reset(lazyMockFieldState.mock)
-            testField.trySetAccessible()
-            testField.set(testContext.testInstance, lazyMockFieldState.mock)
+            mockingField.trySetAccessible()
+            mockingField.set(testContext.testInstance, lazyMockFieldState.mock)
 
-            val targetField = lazyMockFieldState.field
+            val targetField = lazyMockFieldState.targetField
             targetField.trySetAccessible()
-            targetField.set(lazyMockFieldState.parents, lazyMockFieldState.mock)
+            targetField.set(lazyMockFieldState.targetBean, lazyMockFieldState.mock)
         }
     }
 
@@ -53,9 +53,9 @@ class LazyMockBeanTestExecutionListener : TestExecutionListener, Ordered {
         }
 
         for (lazyMockFieldState in stateContextList) {
-            val targetField = lazyMockFieldState.field
+            val targetField = lazyMockFieldState.targetField
             targetField.trySetAccessible()
-            targetField.set(lazyMockFieldState.parents, lazyMockFieldState.origin)
+            targetField.set(lazyMockFieldState.targetBean, lazyMockFieldState.origin)
         }
         LazyMockFieldStateContext.removeLocal()
     }
