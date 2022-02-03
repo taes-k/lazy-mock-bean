@@ -3,7 +3,7 @@ package io.github.taesk.lazymockbean.data
 import java.lang.reflect.Field
 import java.util.Objects
 
-data class LazyMockFieldState(
+data class LazyMockDefinition(
     val mockingField: Field,
     val targetField: Field,
     val targetBean: Any,
@@ -15,7 +15,7 @@ data class LazyMockFieldState(
             return false
         }
 
-        if (other !is LazyMockFieldState) {
+        if (other !is LazyMockDefinition) {
             return false
         }
 

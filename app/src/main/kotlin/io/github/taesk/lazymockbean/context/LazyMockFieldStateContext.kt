@@ -1,11 +1,11 @@
 package io.github.taesk.lazymockbean.context
 
-import io.github.taesk.lazymockbean.data.LazyMockFieldState
+import io.github.taesk.lazymockbean.data.LazyMockDefinition
 
 object LazyMockFieldStateContext {
-    private val threadLocal = ThreadLocal<Set<LazyMockFieldState>>()
+    private val threadLocal = ThreadLocal<Set<LazyMockDefinition>>()
 
-    fun addLocal(value: Set<LazyMockFieldState>) {
+    fun addLocal(value: Set<LazyMockDefinition>) {
         val stateContextList = threadLocal.get()
         if (stateContextList.isNullOrEmpty()) {
             threadLocal.set(value)
@@ -14,7 +14,7 @@ object LazyMockFieldStateContext {
         }
     }
 
-    fun getLocal(): Set<LazyMockFieldState>? {
+    fun getLocal(): Set<LazyMockDefinition>? {
         return threadLocal.get()
     }
 

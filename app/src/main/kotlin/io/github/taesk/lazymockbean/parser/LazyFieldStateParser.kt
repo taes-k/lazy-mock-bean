@@ -1,6 +1,6 @@
 package io.github.taesk.lazymockbean.parser
 
-import io.github.taesk.lazymockbean.data.LazyMockFieldState
+import io.github.taesk.lazymockbean.data.LazyMockDefinition
 import io.github.taesk.lazymockbean.data.LazyMockTarget
 import org.springframework.aop.framework.AopProxyUtils
 import org.springframework.aop.support.AopUtils
@@ -9,7 +9,7 @@ import org.springframework.util.ReflectionUtils
 import java.lang.reflect.Field
 
 interface LazyFieldStateParser {
-    fun parse(testContext: TestContext): Set<LazyMockFieldState>
+    fun parse(testContext: TestContext): Set<LazyMockDefinition>
 
     companion object {
         fun Field.getForce(parent: Any): Any {
@@ -17,12 +17,12 @@ interface LazyFieldStateParser {
             return this.get(parent)
         }
 
-        fun getLazyMockTargetBean(
+        fun findMockingTarget(
             testContext: TestContext,
             targetObject: Class<*>,
             targetFieldType: Class<*>
         ): LazyMockTarget {
-            val targetBean = getBeanWithoutProxy(testContext, targetObject)
+            val targetBean = findBeanWithoutProxy(testContext, targetObject)
             val targetFieldInBean = ReflectionUtils.findField(targetBean::class.java, null, targetFieldType)
             requireNotNull(targetFieldInBean) { "not exist field [${targetFieldType.name}] in bean [${targetObject.simpleName}]" }
 
@@ -32,7 +32,7 @@ interface LazyFieldStateParser {
             )
         }
 
-        fun getBean(
+        fun findBean(
             testContext: TestContext,
             targetObject: Class<*>
         ): Any {
@@ -43,11 +43,11 @@ interface LazyFieldStateParser {
             return targetBeans.values.first()
         }
 
-        fun getBeanWithoutProxy(
+        private fun findBeanWithoutProxy(
             testContext: TestContext,
             targetObject: Class<*>
         ): Any {
-            return unWrapProxy(getBean(testContext, targetObject))
+            return unWrapProxy(findBean(testContext, targetObject))
         }
 
         private fun unWrapProxy(targetBeanCandidate: Any): Any {

@@ -1,66 +1,66 @@
 package io.github.taesk.lazymockbean.listener
 
-import io.github.taesk.lazymockbean.context.LazyMockFieldStateContext
+import io.github.taesk.lazymockbean.data.LazyMockDefinition
 import io.github.taesk.lazymockbean.parser.LazyMockFieldStateParser
 import io.github.taesk.lazymockbean.parser.LazySpyFieldStateParser
 import org.mockito.Mockito
-import org.springframework.core.Ordered
 import org.springframework.test.context.TestContext
-import org.springframework.test.context.TestExecutionListener
+import org.springframework.test.context.support.AbstractTestExecutionListener
 
-class LazyMockBeanTestExecutionListener : TestExecutionListener, Ordered {
+class LazyMockBeanTestExecutionListener : AbstractTestExecutionListener() {
     override fun beforeTestClass(testContext: TestContext) {
-        val lazyMockFieldStates = LazyMockFieldStateParser.parse(testContext)
-        LazyMockFieldStateContext.addLocal(lazyMockFieldStates)
+        initMocks(testContext)
+    }
 
-        val lazySpyFieldStates = LazySpyFieldStateParser.parse(testContext)
-        LazyMockFieldStateContext.addLocal(lazySpyFieldStates)
-        super.beforeTestClass(testContext)
+    private fun initMocks(testContext: TestContext) {
+        val lazyMockDefinitions = LazyMockFieldStateParser.parse(testContext)
+        val lazySpyDefinitions = LazySpyFieldStateParser.parse(testContext)
+        val definitions = lazyMockDefinitions + lazySpyDefinitions
+
+        if (definitions.isNotEmpty()) {
+            testContext.setAttribute(MOCKS_ATTRIBUTE_NAME, definitions)
+        }
     }
 
     override fun prepareTestInstance(testContext: TestContext) {
-        setLazyMockField(testContext)
-        super.prepareTestInstance(testContext)
+        injectFields(testContext)
     }
 
-    private fun setLazyMockField(testContext: TestContext) {
-        val stateContextList = LazyMockFieldStateContext.getLocal()
-        if (stateContextList.isNullOrEmpty()) {
-            return
-        }
+    @Suppress("UNCHECKED_CAST")
+    private fun injectFields(testContext: TestContext) {
+        val definitions = testContext.getAttribute(MOCKS_ATTRIBUTE_NAME) as Set<LazyMockDefinition>?
+        for (definition in definitions.orEmpty()) {
+            Mockito.reset(definition.mock)
 
-        for (lazyMockFieldState in stateContextList) {
-            val mockingField = lazyMockFieldState.mockingField
-            Mockito.reset(lazyMockFieldState.mock)
+            val mockingField = definition.mockingField
             mockingField.trySetAccessible()
-            mockingField.set(testContext.testInstance, lazyMockFieldState.mock)
+            mockingField.set(testContext.testInstance, definition.mock)
 
-            val targetField = lazyMockFieldState.targetField
+            val targetField = definition.targetField
             targetField.trySetAccessible()
-            targetField.set(lazyMockFieldState.targetBean, lazyMockFieldState.mock)
+            targetField.set(definition.targetBean, definition.mock)
         }
     }
 
     override fun afterTestClass(testContext: TestContext) {
-        rollbackLazyMockField()
-        super.afterTestClass(testContext)
+        revertFields(testContext)
     }
 
-    private fun rollbackLazyMockField() {
-        val stateContextList = LazyMockFieldStateContext.getLocal()
-        if (stateContextList.isNullOrEmpty()) {
-            return
-        }
-
-        for (lazyMockFieldState in stateContextList) {
-            val targetField = lazyMockFieldState.targetField
+    @Suppress("UNCHECKED_CAST")
+    private fun revertFields(testContext: TestContext) {
+        val definitions = testContext.getAttribute(MOCKS_ATTRIBUTE_NAME) as Set<LazyMockDefinition>?
+        for (definition in definitions.orEmpty()) {
+            val targetField = definition.targetField
             targetField.trySetAccessible()
-            targetField.set(lazyMockFieldState.targetBean, lazyMockFieldState.origin)
+            targetField.set(definition.targetBean, definition.origin)
         }
-        LazyMockFieldStateContext.removeLocal()
     }
 
     override fun getOrder(): Int {
         return Integer.MAX_VALUE
+    }
+
+    companion object {
+        private const val MOCKS_ATTRIBUTE_NAME: String = "LAZY_MOCK_BEANS"
     }
 }
