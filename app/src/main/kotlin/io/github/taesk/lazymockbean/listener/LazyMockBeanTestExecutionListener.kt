@@ -1,22 +1,18 @@
 package io.github.taesk.lazymockbean.listener
 
 import io.github.taesk.lazymockbean.data.LazyMockDefinition
-import io.github.taesk.lazymockbean.parser.LazyMockFieldStateParser
-import io.github.taesk.lazymockbean.parser.LazySpyFieldStateParser
+import io.github.taesk.lazymockbean.parser.LazyMockDefinitionParser
 import org.mockito.Mockito
 import org.springframework.test.context.TestContext
 import org.springframework.test.context.support.AbstractTestExecutionListener
 
 class LazyMockBeanTestExecutionListener : AbstractTestExecutionListener() {
     override fun beforeTestClass(testContext: TestContext) {
-        initMocks(testContext)
+        initMockDefinitions(testContext)
     }
 
-    private fun initMocks(testContext: TestContext) {
-        val lazyMockDefinitions = LazyMockFieldStateParser.parse(testContext)
-        val lazySpyDefinitions = LazySpyFieldStateParser.parse(testContext)
-        val definitions = lazyMockDefinitions + lazySpyDefinitions
-
+    private fun initMockDefinitions(testContext: TestContext) {
+        val definitions = LazyMockDefinitionParser.parse(testContext)
         if (definitions.isNotEmpty()) {
             testContext.setAttribute(MOCKS_ATTRIBUTE_NAME, definitions)
         }
