@@ -1,5 +1,6 @@
 package io.github.taesk.lazymockbean.parser
 
+import io.github.taesk.lazymockbean.data.DependencyFinder
 import io.github.taesk.lazymockbean.data.LazyMockDefinition
 import io.github.taesk.lazymockbean.data.LazyMockTarget
 import io.github.taesk.lazymockbean.utils.Annotations
@@ -10,7 +11,6 @@ import org.springframework.test.context.TestContext
 import org.springframework.util.ClassUtils
 import org.springframework.util.ReflectionUtils
 import java.lang.reflect.Field
-import java.util.Stack
 import kotlin.reflect.KClass
 
 object LazyMockDefinitionParser {
@@ -35,21 +35,28 @@ object LazyMockDefinitionParser {
         mockingField: Field,
         mockObject: Any
     ): List<LazyMockDefinition> {
-        return injectTargets.map {
-            val (targetBean, targetField) = findMockingTarget(
-                testContext = testContext,
-                targetObject = it.java,
-                targetFieldType = mockingField.type
-            )
-            val originValue = targetField.getForce(targetBean)
-            LazyMockDefinition(
-                mockingField = mockingField,
-                targetField = targetField,
-                targetBean = targetBean,
-                origin = originValue,
-                mock = mockObject,
-            )
-        }
+        return injectTargets.map { generateDefinition(testContext, it.java, mockingField, mockObject) }
+    }
+
+    private fun generateDefinition(
+        testContext: TestContext,
+        target: Class<*>,
+        mockingField: Field,
+        mockObject: Any
+    ): LazyMockDefinition {
+        val (targetBean, targetField) = findMockingTarget(
+            testContext = testContext,
+            targetObject = target,
+            targetFieldType = mockingField.type
+        )
+        val originValue = targetField.getForce(targetBean)
+        return LazyMockDefinition(
+            mockingField = mockingField,
+            targetField = targetField,
+            targetBean = targetBean,
+            origin = originValue,
+            mock = mockObject,
+        )
     }
 
     private fun findMockingTarget(
@@ -78,37 +85,23 @@ object LazyMockDefinitionParser {
         mockObject: Any,
     ): List<LazyMockDefinition> {
         val targetFieldType = mockingField.type
-        val dependencyStack = Stack<Class<*>>()
+        val dependencyFinder = DependencyFinder()
         testContext.testClass.declaredFields
             .filter { it.isAnnotationPresent(Autowired::class.java) }
-            .forEach { dependencyStack.push(it.type) }
-
+            .forEach { dependencyFinder.push(it.type) }
         val mockDefinitions = mutableListOf<LazyMockDefinition>()
-        while (dependencyStack.isNotEmpty()) {
-            val depedentClazz = dependencyStack.pop()
-            val definitions = depedentClazz.declaredFields
+        while (!dependencyFinder.isEmpty()) {
+            val depedentClazz = dependencyFinder.pop()
+            depedentClazz.declaredFields
                 .filter { it.type == targetFieldType }
-                .map {
-                    val (targetBean, targetField) = findMockingTarget(
-                        testContext = testContext,
-                        targetObject = depedentClazz,
-                        targetFieldType = targetFieldType
-                    )
-                    val originValue = targetField.getForce(targetBean)
-                    LazyMockDefinition(
-                        mockingField = mockingField,
-                        targetField = targetField,
-                        targetBean = targetBean,
-                        origin = originValue,
-                        mock = mockObject,
-                    )
-                }
-            mockDefinitions.addAll(definitions)
+                .map { generateDefinition(testContext, depedentClazz, mockingField, mockObject) }
+                .let { mockDefinitions.addAll(it) }
             depedentClazz.declaredFields
                 .filter { !ClassUtils.isPrimitiveOrWrapper(it.type) }
-                .forEach { dependencyStack.push(it.type) }
+                .filter { SpringBeans.hasAnyBean(testContext, it.type) }
+                .filter { !dependencyFinder.hasAlradyFound(it.type) }
+                .forEach { dependencyFinder.push(it.type) }
         }
-
         return mockDefinitions
     }
 }

@@ -5,6 +5,14 @@ import org.springframework.aop.support.AopUtils
 import org.springframework.test.context.TestContext
 
 object SpringBeans {
+    fun hasAnyBean(
+        testContext: TestContext,
+        targetObject: Class<*>
+    ): Boolean {
+        val targetBeans = testContext.applicationContext.getBeansOfType(targetObject)
+        return targetBeans.values.any()
+    }
+
     fun findBean(
         testContext: TestContext,
         targetObject: Class<*>
