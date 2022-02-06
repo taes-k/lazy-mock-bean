@@ -24,11 +24,26 @@ object SpringBeans {
         return targetBeans.values.first()
     }
 
+    fun findAllBean(
+        testContext: TestContext,
+        targetObject: Class<*>
+    ): List<Any> {
+        val targetBeans = testContext.applicationContext.getBeansOfType(targetObject)
+        return targetBeans.values.toList()
+    }
+
     fun findBeanWithoutProxy(
         testContext: TestContext,
         targetObject: Class<*>
     ): Any {
         return unWrapProxy(findBean(testContext, targetObject))
+    }
+
+    fun findAllBeansWithoutProxy(
+        testContext: TestContext,
+        targetObject: Class<*>
+    ): List<Any> {
+        return findAllBean(testContext, targetObject).map { unWrapProxy(it) }
     }
 
     private fun unWrapProxy(targetBeanCandidate: Any): Any {

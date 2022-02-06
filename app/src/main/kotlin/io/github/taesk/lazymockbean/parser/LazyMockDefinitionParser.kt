@@ -92,16 +92,29 @@ object LazyMockDefinitionParser {
         val mockDefinitions = mutableListOf<LazyMockDefinition>()
         while (!dependencyFinder.isEmpty()) {
             val depedentClazz = dependencyFinder.pop()
-            depedentClazz.declaredFields
-                .filter { it.type == targetFieldType }
-                .map { generateDefinition(testContext, depedentClazz, mockingField, mockObject) }
-                .let { mockDefinitions.addAll(it) }
-            depedentClazz.declaredFields
-                .filter { !ClassUtils.isPrimitiveOrWrapper(it.type) }
-                .filter { SpringBeans.hasAnyBean(testContext, it.type) }
-                .filter { !dependencyFinder.hasAlradyFound(it.type) }
-                .forEach { dependencyFinder.push(it.type) }
+            val beans = SpringBeans.findAllBeansWithoutProxy(testContext, depedentClazz)
+            for (bean in beans) {
+                bean.javaClass.declaredFields
+                    .filter { it.type == targetFieldType }
+                    .map { generateDefinition(testContext, depedentClazz, mockingField, mockObject) }
+                    .let { mockDefinitions.addAll(it) }
+                bean.javaClass.declaredFields
+                    .filter { isValidateBeanType(it.type) }
+                    .filter { SpringBeans.hasAnyBean(testContext, it.type) }
+                    .filter { !dependencyFinder.hasAlradyFound(it.type) }
+                    .forEach { dependencyFinder.push(it.type) }
+            }
         }
         return mockDefinitions
+    }
+
+    fun isValidateBeanType(type: Class<*>): Boolean {
+        return !ClassUtils.isPrimitiveOrWrapper(type) &&
+            !ClassUtils.isPrimitiveArray(type) &&
+            !ClassUtils.isPrimitiveWrapperArray(type) &&
+            type != java.util.Map::class.java &&
+            type != java.util.List::class.java &&
+            type != java.util.Set::class.java &&
+            type != Object::class.java
     }
 }
