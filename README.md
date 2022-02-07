@@ -26,17 +26,34 @@ dependencies {
 ```kotlin
 class SomethingServiceTest {
 
-    @LazyMockBean(targets = [SampleController::class])
+    // If target field is not defined, autoscan mode is used.
+    // When using autoscan mode, at least one autowired field must be included. 
+    // Autoscan mode automatically scans the bean's dependency tree.
+    @LazySpyBean 
     private lateinit var sampleService1: SampleService1
+    
+    // If target field is defined, only the field of the selected bean is replaced with a mock field.
+    // This can make the mocking setup faster.
+    @LazyMockBean(targets = [SampleController::class])
+    private lateinit var sampleService2: SampleService2
 
     @LazySpyBean(targets = [SampleController::class])
-    private lateinit var sampleService2: SampleService2
-    
-    @LazySpyBean // auto scan SampleController bean dependency tree
     private lateinit var sampleService3: SampleService3
     
     @Autowired
     private lateinit var sut: SampleController
+    
+    @Test
+    fun doSomething_autoFindBeanMocking() {
+        // given
+        Mockito.`when`(sampleService3().getSample()).thenReturn(...);
+
+        // when
+        var result = sut.doSomething(...);
+
+        // then
+        then()...
+    }
 
     @Test
     fun doSomething_withMock() {
@@ -54,18 +71,6 @@ class SomethingServiceTest {
     fun doSomething_withSpy() {
         // given
         Mockito.`when`(sampleService2().getSample()).thenReturn(...);
-
-        // when
-        var result = sut.doSomething(...);
-
-        // then
-        then()...
-    }
-    
-    @Test
-    fun doSomething_autoFindBeanMocking() {
-        // given
-        Mockito.`when`(sampleService3().getSample()).thenReturn(...);
 
         // when
         var result = sut.doSomething(...);
