@@ -1,9 +1,9 @@
 # lazy-mock-bean
 
-`@SpringBootTest`수행중 Context reload 과정없이 `@MockBean`, `@MockSpy`를 설정해줍니다.  
+LazyMockBean allows you to create a `MockingBean` without reloading spring context during `@SpringBootTest`
 
-`@MockBean`, `@SpyBean` 사용시 신규 `Bean` 설정을 위해 SpringContext reload가 발생합니다.  
-대규모 시스템에서의 잦은 SpringContext reload는 테스트 수행 속도에 영향을 주기때문에 `lazy-mock-bean`을 통해 테스트 속도 저하를 방지 할 수 있습니다.
+If you use `@MockBean` then the Spring Context will be reloaded to configure the `Mocking Bean`.
+This negatively affects the test code execution performance. SpringContext reload on large systems takes a long time.
 
 ### Getting started
 
