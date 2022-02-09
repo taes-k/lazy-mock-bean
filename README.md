@@ -7,6 +7,19 @@ This negatively affects the test code execution performance. SpringContext reloa
 
 ### Getting started
 
+java
+```java
+repositories {
+    ...
+    maven { url 'https://jitpack.io' }
+}
+
+dependencies {
+    testImplementation 'com.github.taes-k:lazy-mock-bean:$release-version'
+}
+```
+
+kotlin
 ```gradle
 repositories {
     ...
@@ -23,6 +36,7 @@ dependencies {
 
 ### Examples
 
+kotlin
 ```kotlin
 class SomethingServiceTest {
 
