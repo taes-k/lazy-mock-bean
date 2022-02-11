@@ -35,7 +35,7 @@ object LazyMockDefinitionParser {
         mockingField: Field,
         mockObject: Any
     ): List<LazyMockDefinition> {
-        return injectTargets.map { generateDefinition(testContext, it.java, mockingField, mockObject) }
+        return injectTargets.flatMap { generateDefinition(testContext, it.java, mockingField, mockObject) }
     }
 
     private fun generateDefinition(
@@ -43,35 +43,37 @@ object LazyMockDefinitionParser {
         target: Class<*>,
         mockingField: Field,
         mockObject: Any
-    ): LazyMockDefinition {
-        val (targetBean, targetField) = findMockingTarget(
+    ): List<LazyMockDefinition> {
+        return findMockingTarget(
             testContext = testContext,
             targetObject = target,
             targetFieldType = mockingField.type
-        )
-        val originValue = targetField.getForce(targetBean)
-        return LazyMockDefinition(
-            mockingField = mockingField,
-            targetField = targetField,
-            targetBean = targetBean,
-            origin = originValue,
-            mock = mockObject,
-        )
+        ).map { (targetBean, targetField) ->
+            val originValue = targetField.getForce(targetBean)
+            LazyMockDefinition(
+                mockingField = mockingField,
+                targetField = targetField,
+                targetBean = targetBean,
+                origin = originValue,
+                mock = mockObject,
+            )
+        }
     }
 
     private fun findMockingTarget(
         testContext: TestContext,
         targetObject: Class<*>,
         targetFieldType: Class<*>
-    ): LazyMockTarget {
-        val targetBean = SpringBeans.findBeanWithoutProxy(testContext, targetObject)
-        val targetFieldInBean = ReflectionUtils.findField(targetBean::class.java, null, targetFieldType)
-        requireNotNull(targetFieldInBean) { "not exist field [${targetFieldType.name}] in bean [${targetObject.simpleName}]" }
-
-        return LazyMockTarget(
-            targetBean = targetBean,
-            targetField = targetFieldInBean
-        )
+    ): List<LazyMockTarget> {
+        val beans = SpringBeans.findAllBeansWithoutProxy(testContext, targetObject)
+        return beans.map { bean ->
+            val targetFieldInBean = ReflectionUtils.findField(bean::class.java, null, targetFieldType)
+            requireNotNull(targetFieldInBean) { "not exist field [${targetFieldType.name}] in bean [${targetObject.simpleName}]" }
+            LazyMockTarget(
+                targetBean = bean,
+                targetField = targetFieldInBean
+            )
+        }
     }
 
     private fun Field.getForce(parent: Any): Any {
@@ -96,7 +98,7 @@ object LazyMockDefinitionParser {
             for (bean in beans) {
                 bean.javaClass.declaredFields
                     .filter { it.type == targetFieldType }
-                    .map { generateDefinition(testContext, depedentClazz, mockingField, mockObject) }
+                    .flatMap { generateDefinition(testContext, depedentClazz, mockingField, mockObject) }
                     .let { mockDefinitions.addAll(it) }
                 bean.javaClass.declaredFields
                     .filter { isValidateBeanType(it.type) }
@@ -108,7 +110,7 @@ object LazyMockDefinitionParser {
         return mockDefinitions
     }
 
-    fun isValidateBeanType(type: Class<*>): Boolean {
+    private fun isValidateBeanType(type: Class<*>): Boolean {
         return !ClassUtils.isPrimitiveOrWrapper(type) &&
             !ClassUtils.isPrimitiveArray(type) &&
             !ClassUtils.isPrimitiveWrapperArray(type) &&

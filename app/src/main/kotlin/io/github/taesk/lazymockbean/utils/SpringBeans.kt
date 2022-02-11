@@ -20,23 +20,7 @@ object SpringBeans {
         val targetBeans = testContext.applicationContext.getBeansOfType(targetObject)
         require(targetBeans.isNotEmpty()) { "not exist bean [${targetObject.simpleName}] in beanFactory" }
         require(targetBeans.size == 1) { "more than 1 bean [${targetObject.simpleName}] in beanFactory" }
-
         return targetBeans.values.first()
-    }
-
-    fun findAllBean(
-        testContext: TestContext,
-        targetObject: Class<*>
-    ): List<Any> {
-        val targetBeans = testContext.applicationContext.getBeansOfType(targetObject)
-        return targetBeans.values.toList()
-    }
-
-    fun findBeanWithoutProxy(
-        testContext: TestContext,
-        targetObject: Class<*>
-    ): Any {
-        return unWrapProxy(findBean(testContext, targetObject))
     }
 
     fun findAllBeansWithoutProxy(
@@ -44,6 +28,14 @@ object SpringBeans {
         targetObject: Class<*>
     ): List<Any> {
         return findAllBean(testContext, targetObject).map { unWrapProxy(it) }
+    }
+
+    private fun findAllBean(
+        testContext: TestContext,
+        targetObject: Class<*>
+    ): List<Any> {
+        val targetBeans = testContext.applicationContext.getBeansOfType(targetObject)
+        return targetBeans.values.toList()
     }
 
     private fun unWrapProxy(targetBeanCandidate: Any): Any {
