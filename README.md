@@ -7,7 +7,7 @@ This negatively affects the test code execution performance. SpringContext reloa
 
 ### Getting started
 
-java
+build.gradle
 ```java
 repositories {
     ...
@@ -19,7 +19,7 @@ dependencies {
 }
 ```
 
-kotlin
+build.gradle.kts
 ```gradle
 repositories {
     ...
