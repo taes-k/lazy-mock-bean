@@ -8,19 +8,21 @@ the test code execution performance. SpringContext reload on large systems takes
 ### Getting started
 
 build.gradle
-```java
-repositories{
-        ...
-        maven{url'https://jitpack.io'}
-        }
 
-        dependencies{
-        testImplementation'com.github.taes-k:lazy-mock-bean:$release-version'
-        }
+```groovy
+repositories {
+    ...
+    maven { url 'https://jitpack.io' }
+}
+
+dependencies {
+    testImplementation 'com.github.taes-k:lazy-mock-bean:$release-version'
+}
 ```
 
 build.gradle.kts
-```gradle
+
+```kotlin
 repositories {
     ...
     maven(url = "https://jitpack.io")
@@ -36,6 +38,67 @@ dependencies {
 
 ### Examples
 
+java
+
+```java
+class SomethingServiceTest {
+
+    // If target fields are not defined, autoscan mode is used. 
+    // When using autoscan mode, at least one `@LazyInjectMockBeans` field must be included. 
+    // Autoscan mode automatically scans the bean's dependency tree.
+    @LazySpyBean
+    private SampleService1 sampleService1;
+
+    // If target fields are defined, the bean of the selected type is replaced with a mock field.
+    // This can make the mocking setup faster than autoscan mode.
+    @LazyMockBean({SampleController.class})
+    private SampleService2 sampleService2;
+
+    @LazySpyBean({SampleController.class})
+    private SampleService3 sampleService3;
+
+    @LazyInjectMockBeans
+    @Autowired
+    private SampleController sut;
+
+    @Test
+    void doSomething_autoFindBeanMocking() {
+        // given
+        Mockito.when(sampleService3.getSample()).thenReturn(...);
+
+        // when
+        var result = sut.doSomething(...);
+
+        // then
+        then()...
+    }
+
+    @Test
+    void doSomething_withMock() {
+        // given
+        Mockito.when(sampleService1.getSample()).thenReturn(...);
+
+        // when
+        var result = sut.doSomething(...);
+
+        // then
+        then()...
+    }
+
+    @Test
+    void doSomething_withSpy() {
+        // given
+        Mockito.when(sampleService2.getSample()).thenReturn(...);
+
+        // when
+        var result = sut.doSomething(...);
+
+        // then
+        then()...
+    }
+}
+```
+
 kotlin
 
 ```kotlin
@@ -49,10 +112,10 @@ class SomethingServiceTest {
 
     // If target fields are defined, the bean of the selected type is replaced with a mock field.
     // This can make the mocking setup faster than autoscan mode.
-    @LazyMockBean(targets = [SampleController::class])
+    @LazyMockBean(value = [SampleController::class])
     private lateinit var sampleService2: SampleService2
 
-    @LazySpyBean(targets = [SampleController::class])
+    @LazySpyBean(value = [SampleController::class])
     private lateinit var sampleService3: SampleService3
 
     @LazyInjectMockBeans
@@ -62,10 +125,10 @@ class SomethingServiceTest {
     @Test
     fun doSomething_autoFindBeanMocking() {
         // given
-        Mockito.`when`(sampleService3().getSample()).thenReturn(...);
+        Mockito.`when`(sampleService3.getSample()).thenReturn(...);
 
         // when
-        var result = sut.doSomething(...);
+        val result = sut.doSomething(...);
 
         // then
         then()...
@@ -74,10 +137,10 @@ class SomethingServiceTest {
     @Test
     fun doSomething_withMock() {
         // given
-        Mockito.`when`(sampleService1().getSample()).thenReturn(...);
+        Mockito.`when`(sampleService1.getSample()).thenReturn(...);
 
         // when
-        var result = sut.doSomething(...);
+        val result = sut.doSomething(...);
 
         // then
         then()...
@@ -86,10 +149,10 @@ class SomethingServiceTest {
     @Test
     fun doSomething_withSpy() {
         // given
-        Mockito.`when`(sampleService2().getSample()).thenReturn(...);
+        Mockito.`when`(sampleService2.getSample()).thenReturn(...);
 
         // when
-        var result = sut.doSomething(...);
+        val result = sut.doSomething(...);
 
         // then
         then()...
