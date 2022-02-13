@@ -1,5 +1,6 @@
 package io.github.taesk.lazymockbean.sampleapp
 
+import io.github.taesk.lazymockbean.annotation.LazyInjectMockBeans
 import io.github.taesk.lazymockbean.annotation.LazyMockBean
 import io.github.taesk.lazymockbean.annotation.LazySpyBean
 import io.github.taesk.lazymockbean.sampleapp.controller.SampleController
@@ -13,12 +14,13 @@ import org.springframework.boot.test.context.SpringBootTest
 
 @SpringBootTest
 class SampleControllerDTest {
-    @LazyMockBean // without inject target
+    @LazyMockBean
     private lateinit var sampleServiceD1: SampleServiceD1
 
-    @LazySpyBean // without inject target
+    @LazySpyBean
     private lateinit var sampleServiceD2: SampleServiceD2
 
+    @LazyInjectMockBeans
     @Autowired
     private lateinit var sut: SampleController
 

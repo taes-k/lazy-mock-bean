@@ -1,12 +1,12 @@
 package io.github.taesk.lazymockbean.parser
 
+import io.github.taesk.lazymockbean.annotation.LazyInjectMockBeans
 import io.github.taesk.lazymockbean.data.DependencyFinder
 import io.github.taesk.lazymockbean.data.LazyMockDefinition
 import io.github.taesk.lazymockbean.data.LazyMockTarget
 import io.github.taesk.lazymockbean.utils.Annotations
 import io.github.taesk.lazymockbean.utils.MockGenerator
 import io.github.taesk.lazymockbean.utils.SpringBeans
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.test.context.TestContext
 import org.springframework.util.ClassUtils
 import org.springframework.util.ReflectionUtils
@@ -14,6 +14,8 @@ import java.lang.reflect.Field
 import kotlin.reflect.KClass
 
 object LazyMockDefinitionParser {
+    private val EXCLUDE_BEAN_PACKAGE: List<String> = listOf("java.util", "java.lang")
+
     fun parse(testContext: TestContext): Set<LazyMockDefinition> {
         return testContext.testClass.declaredFields
             .filter { Annotations.hasLazyMockBeanAnotations(it) }
@@ -89,7 +91,7 @@ object LazyMockDefinitionParser {
         val targetFieldType = mockingField.type
         val dependencyFinder = DependencyFinder()
         testContext.testClass.declaredFields
-            .filter { it.isAnnotationPresent(Autowired::class.java) }
+            .filter { it.isAnnotationPresent(LazyInjectMockBeans::class.java) }
             .forEach { dependencyFinder.push(it.type) }
         val mockDefinitions = mutableListOf<LazyMockDefinition>()
         while (!dependencyFinder.isEmpty()) {
@@ -114,9 +116,6 @@ object LazyMockDefinitionParser {
         return !ClassUtils.isPrimitiveOrWrapper(type) &&
             !ClassUtils.isPrimitiveArray(type) &&
             !ClassUtils.isPrimitiveWrapperArray(type) &&
-            type != java.util.Map::class.java &&
-            type != java.util.List::class.java &&
-            type != java.util.Set::class.java &&
-            type != Object::class.java
+            type.`package`.toString() !in EXCLUDE_BEAN_PACKAGE
     }
 }
