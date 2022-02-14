@@ -9,7 +9,7 @@ allprojects {
         maven { url 'https://jitpack.io' }
     }
     group = 'com.github.taes-k'
-    version = '0.0.6'
+    version = '0.0.7'
 }
 
 subprojects {
