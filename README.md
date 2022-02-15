@@ -17,6 +17,7 @@ repositories {
 
 dependencies {
     testImplementation 'com.github.taes-k:lazy-mock-bean:$release-version'
+    ...
 }
 ```
 
