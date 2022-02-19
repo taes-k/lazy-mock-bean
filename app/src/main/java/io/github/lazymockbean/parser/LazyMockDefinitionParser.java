@@ -1,7 +1,7 @@
 package io.github.lazymockbean.parser;
 
 import io.github.lazymockbean.annotation.LazyInjectMockBeans;
-import io.github.lazymockbean.data.DependencyFinder;
+import io.github.lazymockbean.data.BeanDependencyFinder;
 import io.github.lazymockbean.data.LazyMockDefinition;
 import io.github.lazymockbean.data.LazyMockTarget;
 import io.github.lazymockbean.utils.Annotations;
@@ -83,27 +83,26 @@ public class LazyMockDefinitionParser {
 
     private List<LazyMockDefinition> parseAutowiredDependencyBeans(TestContext testContext, Field mockingField, Object mockObject) {
         Class<?> targetFieldType = mockingField.getType();
-        DependencyFinder dependencyFinder = new DependencyFinder();
+        BeanDependencyFinder beanDependencyFinder = new BeanDependencyFinder();
         Arrays.stream(testContext.getTestClass().getDeclaredFields())
                 .filter(it -> it.isAnnotationPresent(LazyInjectMockBeans.class))
-                .forEach(it -> dependencyFinder.push(it.getType()));
+                .forEach(it -> beanDependencyFinder.push(it.getType()));
         List<LazyMockDefinition> mockDefinitions = new ArrayList<>();
 
-        while (!dependencyFinder.isEmpty()) {
-            Class<?> depedentClazz = dependencyFinder.pop();
-            List<Object> beans = SpringBeans.findAllBeansWithoutProxy(testContext, depedentClazz);
+        while (beanDependencyFinder.hasMore()) {
+            Class<?> dependentClazz = beanDependencyFinder.pop();
+            List<Object> beans = SpringBeans.findAllBeansWithoutProxy(testContext, dependentClazz);
             for (Object bean : beans) {
                 List<LazyMockDefinition> definitions = Arrays.stream(bean.getClass().getDeclaredFields())
                         .filter(it -> it.getType() == targetFieldType)
-                        .flatMap(it -> generateDefinition(testContext, depedentClazz, mockingField, mockObject).stream())
+                        .flatMap(it -> generateDefinition(testContext, dependentClazz, mockingField, mockObject).stream())
                         .collect(Collectors.toList());
                 mockDefinitions.addAll(definitions);
 
                 Arrays.stream(bean.getClass().getDeclaredFields())
                         .filter(it -> isValidateBeanType(it.getType()))
                         .filter(it -> SpringBeans.hasAnyBean(testContext, it.getType()))
-                        .filter(it -> !dependencyFinder.hasAlradyFound(it.getType()))
-                        .forEach(it -> dependencyFinder.push(it.getType()));
+                        .forEach(it -> beanDependencyFinder.push(it.getType()));
             }
         }
         return mockDefinitions;

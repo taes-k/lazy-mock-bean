@@ -12,7 +12,7 @@ import java.lang.reflect.Field;
 import java.util.Set;
 
 public class LazyMockBeanTestExecutionListener extends AbstractTestExecutionListener {
-    private static final String MOCKS_ATTRIBUTE_NAME = "LAZY_MOCK_BEANS";
+    private static final String MOCKS_ATTRIBUTE_NAME = LazyMockBeanTestExecutionListener.class.getName() + ".mocks";
 
     @Override
     public void beforeTestClass(@NonNull TestContext testContext) {
@@ -26,18 +26,16 @@ public class LazyMockBeanTestExecutionListener extends AbstractTestExecutionList
         }
     }
 
+    @SuppressWarnings("unchecked")
     @Override
-    public void prepareTestInstance(@NonNull TestContext testContext) throws IllegalAccessException {
-        injectFields(testContext);
+    public void beforeTestMethod(@NonNull TestContext testContext) throws IllegalAccessException {
+        Set<LazyMockDefinition> definitions = (Set<LazyMockDefinition>) testContext.getAttribute(MOCKS_ATTRIBUTE_NAME);
+        if (!CollectionUtils.isEmpty(definitions)) {
+            injectFields(testContext, definitions);
+        }
     }
 
-    @SuppressWarnings("unchecked")
-    public void injectFields(TestContext testContext) throws IllegalAccessException {
-        Set<LazyMockDefinition> definitions = (Set<LazyMockDefinition>) testContext.getAttribute(MOCKS_ATTRIBUTE_NAME);
-        if (CollectionUtils.isEmpty(definitions)) {
-            return;
-        }
-
+    public void injectFields(TestContext testContext, Set<LazyMockDefinition> definitions) throws IllegalAccessException {
         for (LazyMockDefinition definition : definitions) {
             Mockito.reset(definition.getMock());
 
@@ -51,18 +49,17 @@ public class LazyMockBeanTestExecutionListener extends AbstractTestExecutionList
         }
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public void afterTestClass(@NonNull TestContext testContext) throws IllegalAccessException {
-        revertFields(testContext);
+        Set<LazyMockDefinition> definitions = (Set<LazyMockDefinition>) testContext.getAttribute(MOCKS_ATTRIBUTE_NAME);
+        if (!CollectionUtils.isEmpty(definitions)) {
+            revertFields(definitions);
+            testContext.removeAttribute(MOCKS_ATTRIBUTE_NAME);
+        }
     }
 
-    @SuppressWarnings("unchecked")
-    private void revertFields(TestContext testContext) throws IllegalAccessException {
-        Set<LazyMockDefinition> definitions = (Set<LazyMockDefinition>) testContext.getAttribute(MOCKS_ATTRIBUTE_NAME);
-        if (CollectionUtils.isEmpty(definitions)) {
-            return;
-        }
-
+    private void revertFields(Set<LazyMockDefinition> definitions) throws IllegalAccessException {
         for (LazyMockDefinition definition : definitions) {
             Field targetField = definition.getTargetField();
             targetField.trySetAccessible();
