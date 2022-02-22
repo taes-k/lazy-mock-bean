@@ -126,7 +126,7 @@ class SomethingServiceTest {
     @Test
     fun doSomething_autoFindBeanMocking() {
         // given
-        Mockito.`when`(sampleService3.getSample()).thenReturn(...);
+        given(sampleService3.getSample()).willReturn(...);
 
         // when
         val result = sut.doSomething(...);
@@ -138,7 +138,7 @@ class SomethingServiceTest {
     @Test
     fun doSomething_withMock() {
         // given
-        Mockito.`when`(sampleService1.getSample()).thenReturn(...);
+        given(sampleService1.getSample()).willReturn(...);
 
         // when
         val result = sut.doSomething(...);
@@ -150,7 +150,7 @@ class SomethingServiceTest {
     @Test
     fun doSomething_withSpy() {
         // given
-        Mockito.`when`(sampleService2.getSample()).thenReturn(...);
+        given(sampleService2.getSample()).willReturn(...);
 
         // when
         val result = sut.doSomething(...);
