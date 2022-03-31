@@ -8,8 +8,8 @@ allprojects {
         mavenCentral()
         maven { url 'https://jitpack.io' }
     }
-    group = 'com.github.taes-k'
-    version = '0.0.7'
+    group = 'io.github.lazymockbean'
+    version = '0.0.8-m7'
 }
 
 subprojects {

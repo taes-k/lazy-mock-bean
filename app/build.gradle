@@ -14,9 +14,5 @@ publishing {
             artifactId = rootProject.name
             from components.java
         }
-//        create<MavenPublication>('mavenJava') {
-//            artifactId = rootProject.name
-//            from(components['java'])
-//        }
     }
 }
