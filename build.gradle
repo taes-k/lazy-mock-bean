@@ -8,8 +8,8 @@ allprojects {
         mavenCentral()
         maven { url 'https://jitpack.io' }
     }
-    group = 'com.github.lazymockbean'
-    version = '0.0.8-m2'
+    group = 'io.github.lazymockbean'
+    version = '0.0.8-m3'
 }
 
 subprojects {
