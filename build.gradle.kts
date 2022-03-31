@@ -10,7 +10,7 @@ allprojects {
     }
 
     group = "io.github.lazymockbean"
-    version = "0.0.8-m5"
+    version = "0.0.8-m6"
 }
 
 subprojects {
