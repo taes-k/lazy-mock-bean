@@ -14,7 +14,7 @@ dependencies {
 
 publishing {
     publications {
-        maven(MavenPublication) {
+        mavenJava(MavenPublication) {
             artifactId = rootProject.name
             from components.java
         }
