@@ -9,7 +9,7 @@ allprojects {
         maven { url 'https://jitpack.io' }
     }
     group = 'io.github.lazymockbean'
-    version = '0.0.8-m7'
+    version = '0.0.8'
 }
 
 subprojects {
