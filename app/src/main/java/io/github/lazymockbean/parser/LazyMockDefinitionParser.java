@@ -9,6 +9,7 @@ import io.github.lazymockbean.utils.MockGenerator;
 import io.github.lazymockbean.utils.SpringBeans;
 import lombok.experimental.UtilityClass;
 import org.apache.commons.lang3.ArrayUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.TestContext;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.ReflectionUtils;
@@ -84,9 +85,17 @@ public class LazyMockDefinitionParser {
     private List<LazyMockDefinition> parseAutowiredDependencyBeans(TestContext testContext, Field mockingField, Object mockObject) {
         Class<?> targetFieldType = mockingField.getType();
         BeanDependencyFinder beanDependencyFinder = new BeanDependencyFinder();
+
         Arrays.stream(testContext.getTestClass().getDeclaredFields())
                 .filter(it -> it.isAnnotationPresent(LazyInjectMockBeans.class))
                 .forEach(it -> beanDependencyFinder.push(it.getType()));
+
+        if (beanDependencyFinder.isEmpty()) {
+            Arrays.stream(testContext.getTestClass().getDeclaredFields())
+                    .filter(it -> it.isAnnotationPresent(Autowired.class))
+                    .forEach(it -> beanDependencyFinder.push(it.getType()));
+        }
+
         List<LazyMockDefinition> mockDefinitions = new ArrayList<>();
 
         while (beanDependencyFinder.hasMore()) {
@@ -100,7 +109,7 @@ public class LazyMockDefinitionParser {
                 mockDefinitions.addAll(definitions);
 
                 Arrays.stream(bean.getClass().getDeclaredFields())
-                        .filter(it -> isValidateBeanType(it.getType()))
+                        .filter(it -> isValidBeanType(it.getType()))
                         .filter(it -> SpringBeans.hasAnyBean(testContext, it.getType()))
                         .forEach(it -> beanDependencyFinder.push(it.getType()));
             }
@@ -108,7 +117,11 @@ public class LazyMockDefinitionParser {
         return mockDefinitions;
     }
 
-    private Boolean isValidateBeanType(Class<?> type) {
+    private Boolean isValidBeanType(Class<?> type) {
+        if (type == null || type.getPackage() == null) {
+            return false;
+        }
+
         return !ClassUtils.isPrimitiveOrWrapper(type) &&
                 !ClassUtils.isPrimitiveArray(type) &&
                 !ClassUtils.isPrimitiveWrapperArray(type) &&
