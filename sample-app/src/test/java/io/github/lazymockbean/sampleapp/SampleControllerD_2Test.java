@@ -1,6 +1,5 @@
 package io.github.lazymockbean.sampleapp;
 
-import io.github.lazymockbean.annotation.LazyInjectMockBeans;
 import io.github.lazymockbean.annotation.LazyMockBean;
 import io.github.lazymockbean.annotation.LazySpyBean;
 import io.github.lazymockbean.sampleapp.controller.SampleController;
@@ -14,14 +13,13 @@ import static org.assertj.core.api.BDDAssertions.then;
 import static org.mockito.BDDMockito.given;
 
 @SpringBootTest
-public class SampleControllerDTest {
+public class SampleControllerD_2Test {
     @LazyMockBean
     private SampleServiceD1 sampleServiceD1;
 
     @LazySpyBean
     private SampleServiceD2 sampleServiceD2;
 
-    @LazyInjectMockBeans
     @Autowired
     private SampleController sut;
 

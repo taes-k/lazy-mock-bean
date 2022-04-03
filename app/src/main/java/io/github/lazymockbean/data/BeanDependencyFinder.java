@@ -23,7 +23,11 @@ public class BeanDependencyFinder {
         return visitStack.pop();
     }
 
+    public Boolean isEmpty() {
+        return visitStack.isEmpty();
+    }
+
     public Boolean hasMore() {
-        return !visitStack.isEmpty();
+        return !isEmpty();
     }
 }
