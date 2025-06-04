@@ -8,12 +8,12 @@ import java.lang.reflect.Field;
 
 @UtilityClass
 public class Annotations {
-    public Boolean hasLazyMockBeanAnotations(Field field) {
+    public Boolean hasLazyMockBeanAnnotations(Field field) {
         return field.isAnnotationPresent(LazyMockBean.class) || field.isAnnotationPresent(LazySpyBean.class);
     }
 
     public Class<?>[] getInjectTargets(Field field) {
-        if (!hasLazyMockBeanAnotations(field)) {
+        if (!hasLazyMockBeanAnnotations(field)) {
             return new Class[0];
         }
 

@@ -27,7 +27,7 @@ public class LazyMockDefinitionParser {
 
     public Set<LazyMockDefinition> parse(TestContext testContext) {
         return Arrays.stream(testContext.getTestClass().getDeclaredFields())
-                .filter(Annotations::hasLazyMockBeanAnotations)
+                .filter(Annotations::hasLazyMockBeanAnnotations)
                 .flatMap(mockingField -> {
                     Class<?> targetFieldType = mockingField.getType();
                     Object mock = MockGenerator.generate(mockingField, testContext, targetFieldType);
